@@ -10,7 +10,8 @@ import stylistic from "@stylistic/eslint-plugin";
 export default defineConfig([
     expoConfig,
     {
-        ignores: ["dist/*", ".expo/*", "android/*", "ios/*", "web-build/*"],
+        // design/ holds design prototypes and mockups, not app code: excluded from lint and the pre-commit hook
+        ignores: ["dist/*", ".expo/*", "android/*", "ios/*", "web-build/*", "design/**"],
     },
     {
         plugins: {

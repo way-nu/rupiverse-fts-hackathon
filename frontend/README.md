@@ -38,6 +38,7 @@ Code is formatted in the default JetBrains WebStorm style: 4-space indent, 120-c
 semicolons, and no spaces inside object/import braces (`import {View} from "react-native"`).
 
 - `eslint.config.mjs` enforces it (Expo's lint rules plus `@stylistic` formatting rules).
+- `design/` (design prototypes and mockups) is excluded from linting and the pre-commit hook.
 - `.editorconfig` carries the same settings for WebStorm (`ij_*` keys), so **Code → Reformat Code** produces lint-clean
   code.
 
