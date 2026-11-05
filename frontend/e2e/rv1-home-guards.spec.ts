@@ -84,11 +84,9 @@ test.describe("RV1 Routing guards", () => {
         });
     }
 
-    test("AC22: Verify email opened directly without an email → Signup or Login, never a blank screen",
-        async ({page, mock}) => {
-            await open(page, "/verify");
-            const landed = page.locator("[data-testid='signup-screen'], [data-testid='login-screen'], " +
-                "[data-testid='verify-screen']");
-            await expect(landed.first()).toBeVisible();
-        });
+    test("AC22: Verify email opened directly without an email → Signup", async ({page, mock}) => {
+        await open(page, "/verify");
+        await expectOnScreen(page, "signup", /\/signup/);
+        await expect(id(page, "verify-screen")).toHaveCount(0);
+    });
 });
