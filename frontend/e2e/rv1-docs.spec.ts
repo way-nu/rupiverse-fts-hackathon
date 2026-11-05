@@ -13,7 +13,9 @@ const FILE = "frontend/CLAUDE.md";
 const ALLOWED_OLD_LINES = new Set([61, 74, 75, 79]);
 const BASE = process.env.AC29_BASE ?? "origin/master";
 
-const git = (...args: string[]): string => execFileSync("git", args, {cwd: ROOT, encoding: "utf8"});
+// Paths below are repo-relative (frontend/CLAUDE.md), so git runs from the repo root.
+const REPO = path.resolve(ROOT, "..");
+const git = (...args: string[]): string => execFileSync("git", args, {cwd: REPO, encoding: "utf8"});
 const mergeBase = (): string => git("merge-base", BASE, "HEAD").trim();
 
 test.describe("RV1 frontend/CLAUDE.md (AC29)", () => {
