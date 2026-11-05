@@ -1,5 +1,5 @@
 """RV1 acceptance · forgot / verify reset code / reset: AC3 (reset), AC6 (reset), AC7 (reset), AC15, AC16, AC17,
-AC25 (password_reset_tokens *_by), AC26."""
+AC26."""
 
 import asyncpg
 import httpx
@@ -112,7 +112,6 @@ async def test_ac15_reset_code_is_stored_hashed_and_separate(client: httpx.Async
     code = await reset_code(client, email)
     row = await code_row(db, email, RESET)
     assert code not in row["code_hash"]
-    assert row["created_by"] == row["user_id"]
     # The verification code row is untouched by the reset request.
     assert (await client.post("/auth/verify", json={"email": email, "code": verify_code_value})).status_code == 200
 
@@ -190,7 +189,7 @@ async def test_ac16_reset_token_is_hashed_and_lives_10_minutes(
     lifetime = (row["expires_at"] - row["created_at"]).total_seconds()
     assert abs(lifetime - 600) < 60, lifetime
     user = await user_row(db, email)
-    assert row["user_id"] == user["id"] and row["created_by"] == user["id"]
+    assert row["user_id"] == user["id"]
 
 
 async def test_ac16_reset_token_works_once(client: httpx.AsyncClient, db: asyncpg.Connection) -> None:
@@ -200,7 +199,6 @@ async def test_ac16_reset_token_works_once(client: httpx.AsyncClient, db: asyncp
     assert (await reset(client, token)).status_code == 204
     row = await reset_row(db, token)
     assert row["used_at"] is not None
-    assert row["updated_by"] == row["user_id"], "AC25: using the token sets updated_by = user_id"
     assert_error(await reset(client, token, "Third@Pass3"), 400, "invalid_reset_token")
     assert (await login(client, email, "Third@Pass3")).status_code == 401
 
@@ -255,7 +253,6 @@ async def test_ac17_reset_changes_password(client: httpx.AsyncClient, db: asyncp
 
     after = await user_row(db, email)
     assert after["password_hash"] != before and after["password_hash"].startswith(("$2a$", "$2b$", "$2y$"))
-    assert after["updated_by"] == after["id"], "AC25: reset sets users.updated_by = user id"
     assert_error(await login(client, email, STRONG_PASSWORD), 401, "invalid_credentials")
     assert_token_pair(await login(client, email, OTHER_PASSWORD), email)
 

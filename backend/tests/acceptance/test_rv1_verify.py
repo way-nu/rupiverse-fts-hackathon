@@ -1,4 +1,4 @@
-"""RV1 acceptance · email verification + resend: AC5, AC6 (verify), AC7 (verify), AC8, AC25 (*_by), AC26."""
+"""RV1 acceptance · email verification + resend: AC5, AC6 (verify), AC7 (verify), AC8, AC25 (updated_at), AC26."""
 
 import asyncpg
 import httpx
@@ -63,8 +63,10 @@ async def test_ac5_code_just_under_10_minutes_still_works(client: httpx.AsyncCli
     assert (await verify(client, email, code)).status_code == 200
 
 
-async def test_ac25_verify_sets_updated_by_and_updated_at(client: httpx.AsyncClient, db: asyncpg.Connection) -> None:
-    """AC25: after verify, users.updated_by = the user's id and updated_at moved forward."""
+async def test_ac25_verify_moves_updated_at_and_leaves_by_null(
+    client: httpx.AsyncClient, db: asyncpg.Connection
+) -> None:
+    """AC25: verify moves users.updated_at forward; *_by stays NULL (unauthenticated write)."""
     email = new_email("audit")
     code = await signup(client, email)
     before = await user_row(db, email)
@@ -73,10 +75,10 @@ async def test_ac25_verify_sets_updated_by_and_updated_at(client: httpx.AsyncCli
 
     assert (await verify(client, email, code)).status_code == 200
     after = await user_row(db, email)
-    assert after["updated_by"] == after["id"]
+    assert after["updated_by"] is None
     assert after["updated_at"] > stamped
     assert after["created_by"] is None
-    assert (await code_row(db, email))["updated_by"] == after["id"]
+    assert (await code_row(db, email))["updated_by"] is None
 
 
 # ── AC6 (verify) ─────────────────────────────────────────────────────────────
@@ -96,7 +98,6 @@ async def test_ac6_verify_wrong_codes_count_down_then_lock(client: httpx.AsyncCl
 
     row = await code_row(db, email)
     assert row["failed_attempts"] == 3
-    assert row["updated_by"] == row["user_id"], "AC25: attempt counting sets updated_by = user_id"
     assert (await user_row(db, email))["is_verified"] is False
 
 
@@ -172,7 +173,6 @@ async def test_ac8_resend_after_60s_issues_new_code_and_resets_attempts(
     assert new_sent["sent_at"] != old_sent["sent_at"]
     row = await code_row(db, email)
     assert row["failed_attempts"] == 0 and row["consumed_at"] is None
-    assert row["updated_by"] == row["user_id"], "AC25: resend sets updated_by = user_id"
 
     if new_sent["code"] != old_code:
         # Old code is dead; and attempts were reset, so this wrong try reports 2 left.

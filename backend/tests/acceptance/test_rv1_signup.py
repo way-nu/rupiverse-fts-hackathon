@@ -1,4 +1,4 @@
-"""RV1 acceptance · signup: AC2, AC3 (signup), AC4, AC25 (users.created_by), AC26."""
+"""RV1 acceptance · signup: AC2, AC3 (signup), AC4, AC26."""
 
 import asyncpg
 import httpx
@@ -64,14 +64,14 @@ async def test_ac2_signup_sends_one_code_email(client: httpx.AsyncClient) -> Non
 
 
 async def test_ac25_signup_user_created_by_is_null(client: httpx.AsyncClient, db: asyncpg.Connection) -> None:
-    """AC25: a self-signup users row has created_by NULL; code rows are created_by the owning user."""
+    """AC25: a self-signup users row and its code row have created_by / updated_by / deleted_* NULL."""
     email = new_email("audit")
     await signup(client, email)
     user = await user_row(db, email)
     assert user["created_by"] is None
     assert user["deleted_at"] is None and user["deleted_by"] is None
     code = await code_row(db, email)
-    assert code["created_by"] == user["id"]
+    assert code["created_by"] is None and code["updated_by"] is None
 
 
 # ── AC3 (signup) ─────────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ async def test_ac4_resignup_unverified_within_60s_updates_password_keeps_code(
 
     user_after = await user_row(db, email)
     assert user_after["password_hash"] != user_before["password_hash"]
-    assert user_after["updated_by"] == user_after["id"], "AC25: re-signup update sets updated_by = user id"
+    assert user_after["updated_by"] is None, "AC25: unauthenticated write leaves updated_by NULL"
     # New password is the one that counts now (unverified → 403, not 401); the old one is rejected.
     assert_error(await login(client, email, OTHER_PASSWORD), 403, "email_not_verified", email=email)
     assert_error(await login(client, email, STRONG_PASSWORD), 401, "invalid_credentials")

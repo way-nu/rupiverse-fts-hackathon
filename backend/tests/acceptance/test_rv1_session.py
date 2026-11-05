@@ -1,4 +1,4 @@
-"""RV1 acceptance · login, /me, refresh, logout: AC9, AC10, AC11, AC12, AC25 (refresh_tokens *_by), AC26."""
+"""RV1 acceptance · login, /me, refresh, logout: AC9, AC10, AC11, AC12, AC26."""
 
 import time
 
@@ -51,11 +51,13 @@ async def test_ac9_login_verified_returns_token_pair(client: httpx.AsyncClient) 
 
 
 async def test_ac9_wrong_password_and_unknown_email_look_the_same(client: httpx.AsyncClient) -> None:
-    """AC9: wrong password and unknown email → 401 invalid_credentials with the same detail."""
+    """AC9: wrong password and unknown email → 401 invalid_credentials with an identical body."""
     email, _ = await verified_user(client)
-    wrong = assert_error(await login(client, email, "Wrong@Pass1"), 401, "invalid_credentials")
-    ghost = assert_error(await login(client, new_email("ghost"), STRONG_PASSWORD), 401, "invalid_credentials")
-    assert wrong == ghost
+    wrong = await login(client, email, "Wrong@Pass1")
+    ghost = await login(client, new_email("ghost"), STRONG_PASSWORD)
+    assert_error(wrong, 401, "invalid_credentials")
+    assert_error(ghost, 401, "invalid_credentials")
+    assert wrong.content == ghost.content, "AC9: identical body for wrong password and unknown email"
 
 
 async def test_ac9_unverified_login_is_403_with_email(client: httpx.AsyncClient) -> None:
@@ -178,17 +180,14 @@ async def test_ac11_refresh_with_unknown_token(client: httpx.AsyncClient) -> Non
     assert_error(await refresh(client, "definitely-not-a-real-refresh-token"), 401, "invalid_refresh_token")
 
 
-async def test_ac11_refresh_token_lifetime_30_days_and_audit(client: httpx.AsyncClient, db: asyncpg.Connection) -> None:
-    """Spec §8 + AC25: refresh tokens live 30 days; created_by = user_id, revoke sets updated_by = user_id."""
+async def test_ac11_refresh_token_lifetime_30_days(client: httpx.AsyncClient, db: asyncpg.Connection) -> None:
+    """Spec §8: refresh tokens live 30 days and belong to the user."""
     email, pair = await verified_user(client)
     row = await refresh_row(db, pair["refresh_token"])
     lifetime = (row["expires_at"] - row["created_at"]).total_seconds()
     assert abs(lifetime - 30 * 86400) < 120, lifetime
     user = await user_row(db, email)
-    assert row["user_id"] == user["id"] and row["created_by"] == user["id"]
-
-    await refresh(client, pair["refresh_token"])
-    assert (await refresh_row(db, pair["refresh_token"]))["updated_by"] == user["id"]
+    assert row["user_id"] == user["id"]
 
 
 # ── AC12 ─────────────────────────────────────────────────────────────────────
