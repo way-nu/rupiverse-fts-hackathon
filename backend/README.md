@@ -1,6 +1,7 @@
 # Rupiverse — Backend
 
-Rupiverse API built with [FastAPI](https://fastapi.tiangolo.com) and Python, managed with [uv](https://docs.astral.sh/uv/).
+Rupiverse API built with [FastAPI](https://fastapi.tiangolo.com) and Python, managed
+with [uv](https://docs.astral.sh/uv/).
 
 ## Versions
 

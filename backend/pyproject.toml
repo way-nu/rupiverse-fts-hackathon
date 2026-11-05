@@ -28,13 +28,13 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors (PEP 8, same checks as PyCharm's PEP 8 inspection)
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes: unused imports/variables, undefined names
-    "I",   # import sorting (PyCharm "Optimize Imports" order)
-    "N",   # pep8-naming (PyCharm naming-convention inspection)
-    "B",   # bugbear: likely bugs
-    "UP",  # pyupgrade: modern syntax for the target Python version
+    "E", # pycodestyle errors (PEP 8, same checks as PyCharm's PEP 8 inspection)
+    "W", # pycodestyle warnings
+    "F", # pyflakes: unused imports/variables, undefined names
+    "I", # import sorting (PyCharm "Optimize Imports" order)
+    "N", # pep8-naming (PyCharm naming-convention inspection)
+    "B", # bugbear: likely bugs
+    "UP", # pyupgrade: modern syntax for the target Python version
 ]
 
 [tool.pytest.ini_options]
