@@ -5,7 +5,7 @@ React Native app built with [Expo](https://expo.dev) and TypeScript.
 ## Versions
 
 | Tool / Package           | Version |
-| ------------------------ | ------- |
+|--------------------------|---------|
 | Node.js                  | 22.23.4 |
 | npm                      | 10.9.9  |
 | Expo SDK                 | 58.0.23 |
@@ -38,7 +38,8 @@ Code is formatted in the default JetBrains WebStorm style: 4-space indent, 120-c
 semicolons, and no spaces inside object/import braces (`import {View} from "react-native"`).
 
 - `eslint.config.mjs` enforces it (Expo's lint rules plus `@stylistic` formatting rules).
-- `.editorconfig` carries the same settings for WebStorm (`ij_*` keys), so **Code → Reformat Code** produces lint-clean code.
+- `.editorconfig` carries the same settings for WebStorm (`ij_*` keys), so **Code → Reformat Code** produces lint-clean
+  code.
 
 ```bash
 npm run lint      # check
