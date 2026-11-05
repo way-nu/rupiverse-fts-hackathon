@@ -115,26 +115,44 @@ async def test_ac14_refresh_tokens_are_stored_hashed(client: httpx.AsyncClient, 
 # ── AC26 sweep ───────────────────────────────────────────────────────────────
 
 MALFORMED_BODIES = [
-    pytest.param("/auth/signup", {}, id="signup-empty"),
-    pytest.param("/auth/verify", {"email": "a@example.com"}, id="verify-missing-code"),
-    pytest.param("/auth/resend", {}, id="resend-empty"),
-    pytest.param("/auth/login", {"email": "a@example.com"}, id="login-missing-password"),
-    pytest.param("/auth/refresh", {}, id="refresh-empty"),
-    pytest.param("/auth/password/forgot", {}, id="forgot-empty"),
-    pytest.param("/auth/password/verify-code", {"email": "a@example.com"}, id="verify-code-missing-code"),
-    pytest.param("/auth/password/reset", {"reset_token": "x"}, id="reset-missing-password"),
+    pytest.param("/auth/signup", {}, {"email", "password"}, id="signup-empty"),
+    pytest.param(
+        "/auth/signup", {"email": "a@example.com", "password": 12345678}, {"password"}, id="signup-wrong-type"
+    ),
+    pytest.param("/auth/verify", {"email": "a@example.com"}, {"code"}, id="verify-missing-code"),
+    pytest.param("/auth/resend", {}, {"email"}, id="resend-empty"),
+    pytest.param("/auth/login", {"email": "a@example.com"}, {"password"}, id="login-missing-password"),
+    pytest.param("/auth/refresh", {}, {"refresh_token"}, id="refresh-empty"),
+    pytest.param("/auth/logout", {}, {"refresh_token"}, id="logout-empty"),
+    pytest.param("/auth/password/forgot", {}, {"email"}, id="forgot-empty"),
+    pytest.param("/auth/password/verify-code", {"email": "a@example.com"}, {"code"}, id="verify-code-missing-code"),
+    pytest.param("/auth/password/reset", {"reset_token": "x"}, {"new_password"}, id="reset-missing-password"),
 ]
 
 
-@pytest.mark.parametrize(("path", "payload"), MALFORMED_BODIES)
-async def test_ac26_malformed_requests_use_the_error_shape(client: httpx.AsyncClient, path: str, payload: dict) -> None:
-    """AC26: even request-validation failures come back as {"error", "detail"} (+ optional fields), never FastAPI's
-    default {"detail": [...]} list."""
-    response = await client.post(path, json=payload)
-    assert response.status_code in (400, 422), response.text
-    body = response.json()
-    assert isinstance(body.get("error"), str) and body["error"], body
-    assert isinstance(body.get("detail"), str), f"detail must be human text, not {type(body.get('detail'))}: {body}"
+def field_names(fields: object) -> set[str]:
+    """`fields` lists the bad field names (a list of names; a dict keyed by name is accepted too)."""
+    if isinstance(fields, dict):
+        return {str(k) for k in fields}
+    assert isinstance(fields, list), f"fields must list the bad field names: {fields!r}"
+    return {str(f) for f in fields}
+
+
+@pytest.mark.parametrize(("path", "payload", "bad_fields"), MALFORMED_BODIES)
+async def test_ac26_malformed_requests_are_invalid_request(
+    client: httpx.AsyncClient, path: str, payload: dict, bad_fields: set[str]
+) -> None:
+    """AC26 + PM ruling 2026-11-05: a malformed body (missing field / wrong type) on any endpoint → 422
+    invalid_request in the flat shape, with `fields` listing the bad field names; values are never echoed."""
+    body = assert_error(await client.post(path, json=payload), 422, "invalid_request", fields=...)
+    assert bad_fields <= field_names(body["fields"]), body
+    assert "12345678" not in str(body)
+
+
+async def test_ac26_non_json_body_is_invalid_request(client: httpx.AsyncClient) -> None:
+    """AC26: a body that is not JSON at all is still a flat 422 invalid_request."""
+    response = await client.post("/auth/login", content=b"not json", headers={"Content-Type": "application/json"})
+    assert_error(response, 422, "invalid_request")
 
 
 async def test_ac26_login_errors_use_the_error_shape(client: httpx.AsyncClient) -> None:
