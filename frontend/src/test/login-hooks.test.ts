@@ -4,8 +4,8 @@ import {router} from "expo-router";
 
 import {mockControl} from "@/services/mock/control";
 
-import {ERROR_TEXT} from "./constants";
-import {useLogin} from "./hooks";
+import {ERROR_TEXT} from "@/modules/login/constants";
+import {useLogin} from "@/modules/login/hooks";
 
 jest.mock("@/services/auth-storage", () => jest.requireActual<typeof import("@/test/memory-storage")>("@/test/memory-storage").memoryStorage);
 jest.mock("expo-router", () => ({
