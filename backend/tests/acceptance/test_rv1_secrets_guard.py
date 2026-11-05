@@ -9,7 +9,7 @@ import time
 import httpx
 import pytest
 
-from tests.acceptance.conftest import BACKEND_DIR, HOST, server_env
+from tests.acceptance.conftest import BACKEND_DIR, CODE_HASH_SECRET, HOST, JWT_SECRET, server_env
 
 
 def _free_port() -> int:
@@ -53,9 +53,19 @@ def test_ac30_app_refuses_to_start_with_an_empty_secret(database_url: str, key: 
     served, code, output = _start(env)
     assert not served, f"the app served requests with an empty {key}"
     assert code not in (None, 0), f"expected a non-zero exit with an empty {key}, got {code}:\n{output}"
+    assert key in output, f"AC30: the startup error must name {key}:\n{output[-2000:]}"
+    leaked = [v for v in (JWT_SECRET, CODE_HASH_SECRET, env["SMTP_APP_PASSWORD"], env["DATABASE_URL"]) if v in output]
+    assert leaked == [], f"AC30: secret values appear in the startup output: {leaked}"
 
 
 def test_ac30_app_starts_when_both_secrets_are_set(database_url: str) -> None:
     """AC30 control: with both secrets set (and the outbox off) the same command serves normally."""
     served, _, output = _start(server_env(database_url, APP_ENV="test", TEST_OUTBOX_ENABLED="false"))
     assert served, f"the app did not start with both secrets set:\n{output[-2000:]}"
+
+
+def test_ac30_env_example_explains_env_staging() -> None:
+    """AC30: backend/.env.example has a comment explaining the .env.staging file."""
+    example = (BACKEND_DIR / ".env.example").read_text()
+    comments = [line for line in example.splitlines() if line.lstrip().startswith("#")]
+    assert any(".env.staging" in line for line in comments), "no comment in .env.example mentions .env.staging"
