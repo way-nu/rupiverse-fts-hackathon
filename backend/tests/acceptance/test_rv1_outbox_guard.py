@@ -1,5 +1,6 @@
 """RV1 acceptance · test outbox switch and production guard: AC13."""
 
+import socket
 import subprocess
 import sys
 import time
@@ -8,7 +9,7 @@ from collections.abc import Iterator
 import httpx
 import pytest
 
-from tests.acceptance.conftest import BACKEND_DIR, HOST, PORT, Server, server_env, start_server, stop_server
+from tests.acceptance.conftest import BACKEND_DIR, HOST, Server, server_env, start_server, stop_server
 
 
 @pytest.fixture(scope="module", params=["unset", "false"])
@@ -39,8 +40,12 @@ def test_ac13_outbox_not_in_openapi_when_disabled(server: Server) -> None:
 def test_ac13_app_refuses_to_start_with_outbox_in_production(database_url: str) -> None:
     """AC13: TEST_OUTBOX_ENABLED=true + APP_ENV=production → the app refuses to start (non-zero exit, never serves)."""
     env = server_env(database_url, TEST_OUTBOX_ENABLED="true", APP_ENV="production")
+    # A port of its own: this module's outbox-off server may still be listening on PORT.
+    with socket.socket() as sock:
+        sock.bind((HOST, 0))
+        port = sock.getsockname()[1]
     process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", HOST, "--port", str(PORT)],
+        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", HOST, "--port", str(port)],
         cwd=BACKEND_DIR,
         env=env,
         stdout=subprocess.PIPE,
@@ -51,7 +56,7 @@ def test_ac13_app_refuses_to_start_with_outbox_in_production(database_url: str) 
     try:
         while time.monotonic() < deadline and process.poll() is None:
             try:
-                httpx.get(f"http://{HOST}:{PORT}/test/outbox/latest", params={"email": "a@example.com"}, timeout=0.5)
+                httpx.get(f"http://{HOST}:{port}/test/outbox/latest", params={"email": "a@example.com"}, timeout=0.5)
                 served = True
                 break
             except httpx.TransportError:

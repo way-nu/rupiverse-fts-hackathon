@@ -173,7 +173,7 @@ def test_ac25_by_columns_reference_users_on_delete_set_null(migrated_db: str, ta
     rows = query(
         migrated_db,
         """
-        SELECT a.attname AS column_name, cf.relname AS ref_table, c.confdeltype AS on_delete
+        SELECT a.attname AS column_name, cf.relname AS ref_table, c.confdeltype::text AS on_delete
         FROM pg_constraint c
         JOIN pg_class ct ON ct.oid = c.conrelid
         JOIN pg_class cf ON cf.oid = c.confrelid
@@ -213,7 +213,7 @@ def test_ac25_spec_columns_and_constraints(migrated_db: str) -> None:
     cascades = query(
         migrated_db,
         """
-        SELECT ct.relname AS table_name, c.confdeltype AS on_delete
+        SELECT ct.relname AS table_name, c.confdeltype::text AS on_delete
         FROM pg_constraint c
         JOIN pg_class ct ON ct.oid = c.conrelid
         JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
