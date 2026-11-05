@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environment (created by uv)
+.venv/
+
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# JetBrains IDE (personal settings; code style comes from .editorconfig and pyproject.toml)
+.idea/
+
+# Cursor
+.cursor/
+
+# macOS
+.DS_Store

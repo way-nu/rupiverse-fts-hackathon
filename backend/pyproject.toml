@@ -1,0 +1,41 @@
+[project]
+name = "rupiverse-backend"
+version = "0.1.0"
+description = "Rupiverse API (FastAPI)"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.162.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+# Formatting and linting: Ruff, configured to match JetBrains PyCharm defaults
+# (PEP 8, 4-space indent, 120-column hard wrap, 2 blank lines around top-level definitions).
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py314"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors (PEP 8, same checks as PyCharm's PEP 8 inspection)
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes: unused imports/variables, undefined names
+    "I",   # import sorting (PyCharm "Optimize Imports" order)
+    "N",   # pep8-naming (PyCharm naming-convention inspection)
+    "B",   # bugbear: likely bugs
+    "UP",  # pyupgrade: modern syntax for the target Python version
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

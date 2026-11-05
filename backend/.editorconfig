@@ -1,0 +1,23 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+tab_width = 4
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+max_line_length = 120
+
+# PyCharm code style for Python (read automatically by PyCharm; matches [tool.ruff] in pyproject.toml)
+[*.py]
+ij_continuation_indent_size = 8
+ij_python_blank_lines_around_top_level_classes_functions = 2
+ij_python_blank_lines_around_method = 1
+ij_python_blank_lines_after_imports = 1
+ij_python_optimize_imports_sort_imports = true
+ij_python_optimize_imports_join_from_imports_with_same_source = true
+
+[*.{toml,yml,yaml,json}]
+indent_size = 4
