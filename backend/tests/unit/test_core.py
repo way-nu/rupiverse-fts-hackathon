@@ -28,6 +28,16 @@ def test_empty_or_short_secrets_refuse_to_start(key: str) -> None:
         _settings(**{key: "short"})
 
 
+def test_config_error_names_the_key_without_its_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.config import ConfigError, load_settings
+
+    monkeypatch.setenv("JWT_SECRET", "")
+    monkeypatch.setenv("CODE_HASH_SECRET", "a-perfectly-long-code-hash-secret-value")
+    with pytest.raises(ConfigError) as info:
+        load_settings()
+    assert "JWT_SECRET" in str(info.value) and "a-perfectly-long" not in str(info.value)
+
+
 def test_outbox_in_production_refuses_to_start() -> None:
     with pytest.raises(UnsafeConfigError):
         check_settings(_settings(test_outbox_enabled=True, app_env="production"))
