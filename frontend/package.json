@@ -1,0 +1,35 @@
+{
+  "name": "rupiverse",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "expo": "~58.0.23",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-web": "^0.21.4"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/react": "~19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~58.0.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
+    "prepare": "cd .. && husky frontend/.husky"
+  },
+  "private": true,
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx}": "eslint --fix --max-warnings=0"
+  }
+}
