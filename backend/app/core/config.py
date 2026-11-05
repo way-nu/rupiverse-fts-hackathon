@@ -3,6 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -17,8 +18,9 @@ class DatabaseSettings(BaseSettings):
 
 
 class Settings(DatabaseSettings):
-    jwt_secret: str
-    code_hash_secret: str
+    # Signing / HMAC keys: refuse to start without a real value (an empty key would sign anything).
+    jwt_secret: str = Field(min_length=32)
+    code_hash_secret: str = Field(min_length=32)
     access_token_ttl_min: int = 15
     refresh_token_ttl_days: int = 30
 
