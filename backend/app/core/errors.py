@@ -10,8 +10,6 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger(__name__)
 
-EMAIL_FIELDS = {"email"}
-
 
 class AppError(Exception):
     """A business error with a stable code. Extra keyword fields are sent at the top level of the body."""
@@ -40,8 +38,6 @@ async def _validation_error(_: Request, exc: Exception) -> JSONResponse:
     """Request-body problems. Never echoes the submitted values (they may be passwords)."""
     assert isinstance(exc, RequestValidationError)
     fields = sorted({str(err["loc"][-1]) for err in exc.errors() if err.get("loc") and len(err["loc"]) > 1})
-    if fields and set(fields) <= EMAIL_FIELDS:
-        return error_response("invalid_email", 422, "Enter a valid email address.", fields=fields)
     return error_response(
         "invalid_request", 422, "The request body is missing fields or has the wrong types.", fields=fields
     )
