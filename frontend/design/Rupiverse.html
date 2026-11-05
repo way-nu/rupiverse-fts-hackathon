@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rupiverse — a multiverse of your finances</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Fonts: Geist (sans), Geist Mono, Instrument Serif (display, ledger),
+     Tiro Devanagari Hindi (Devanagari accent). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Tiro+Devanagari+Hindi:ital@0;1&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Geist", system-ui, -apple-system, sans-serif; background: #f0eee9; }
+  #root { width: 100vw; height: 100vh; }
+</style>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Rupiverse modules — extras (overlays, dialogs, desktop shell) and auth
+     must load before screens since screens reference these globals by name. -->
+<script type="text/babel" src="rupiverse-data.jsx"></script>
+<script type="text/babel" src="rupiverse-theme.jsx"></script>
+<script type="text/babel" src="rupiverse-extras.jsx"></script>
+<script type="text/babel" src="rupiverse-auth.jsx"></script>
+<script type="text/babel" src="rupiverse-screens.jsx"></script>
+
+<!-- Starter components -->
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="android-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "calm"
+}/*EDITMODE-END*/;
+
+// Each entry becomes one section row with iOS + Android + Desktop artboards.
+// Order groups related screens together (Add → Add states; Ledger → Ledger states).
+// `desktopScreen` overrides which desktop view to render (defaults to the
+// mobile screen's nearest desktop equivalent).
+const SECTIONS = [
+  // ── Dashboard ──────────────────────────────────────────────
+  { id: 'login',         title: 'Auth — Log in',                    subtitle: 'Email + password. Extensible: Google SSO / mobile come later.', which: 'login' },
+  { id: 'signup',        title: 'Auth — Sign up',                   subtitle: 'Name, age, phone, gender (optional), email, password',    which: 'signup' },
+  { id: 'signup-invalid',title: 'Auth — Sign up (validation)',      subtitle: 'Invalid values — short name, bad phone/email, weak password', which: 'signup-invalid' },
+  { id: 'otp',           title: 'Auth — Email OTP',                 subtitle: 'Six-digit code verification after sign-up',               which: 'otp' },
+  { id: 'forgot',        title: 'Auth — Forgot password',           subtitle: 'Request a reset code by email',                           which: 'forgot' },
+  { id: 'forgot-otp',    title: 'Auth — Forgot password OTP',       subtitle: 'Verify the reset code',                                   which: 'forgot-otp' },
+  { id: 'reset',         title: 'Auth — Reset password',            subtitle: 'New + confirm, with live rule checks & mismatch error',   which: 'reset' },
+
+  { id: 'dashboard',     title: 'Dashboard',                       subtitle: 'Net flow, where it went, accounts at a glance',          which: 'home' },
+  { id: 'month-open',    title: 'Dashboard — Month picker open',   subtitle: 'Tapping the month chip opens a dropdown of recent months', which: 'home', state: 'month-picker' },
+  { id: 'graph-detail',  title: 'Graph detail',                    subtitle: 'Opens from the Dashboard cards. Apple Health-style time-frame selector + interactive chart.', which: 'graph', desktopScreen: 'graph' },
+
+  // ── Add transaction ────────────────────────────────────────
+  { id: 'add',           title: 'Add transaction',                 subtitle: 'Known merchant — category filled instantly from history (no AI call)', which: 'add' },
+  { id: 'add-autocomplete', title: 'Add — Merchant autocomplete',  subtitle: 'Always-on merchant lookup (plain DB match, no model)',    which: 'add', state: 'autocomplete' },
+  { id: 'add-ai-idle',   title: 'Add — Categorize with AI',        subtitle: 'New merchant — manual, on-demand AI button (never automatic)', which: 'add', state: 'ai-idle' },
+  { id: 'add-ai-loading',title: 'Add — AI categorizing',           subtitle: 'Local model call in flight',                              which: 'add', state: 'ai-loading' },
+  { id: 'add-ai-suggested',title: 'Add — AI suggestion',           subtitle: 'Editable chip, low-confidence flagged, accept or change',  which: 'add', state: 'ai-suggested' },
+  { id: 'add-income',    title: 'Add — Income',                    subtitle: 'Income mode — e.g. bill split repayment received',        which: 'add', initialType: 'income' },
+  { id: 'tag-dialog',    title: 'Add — Tag picker',                subtitle: 'Multi-select tags + custom-tag create',                   which: 'add', state: 'tag-dialog' },
+  { id: 'transfer',      title: 'Add — Transfer',                  subtitle: 'Self-transfer between two of your accounts',              which: 'add', initialType: 'transfer' },
+  { id: 'acc-picker',    title: 'Transfer — Account picker',       subtitle: 'Tapping From / To opens a sheet of eligible accounts',    which: 'add', initialType: 'transfer', state: 'account-picker' },
+
+  // ── Ledger ─────────────────────────────────────────────────
+  { id: 'txns',          title: 'Ledger',                          subtitle: 'The full transaction list',                               which: 'txns' },
+  { id: 'searching',     title: 'Ledger — Searching',              subtitle: 'Live search; matched text highlighted in results',        which: 'txns', state: 'searching' },
+  { id: 'filter-open',   title: 'Ledger — Filter dialog',          subtitle: 'Date range, categories, accounts, amount, type',          which: 'txns', state: 'filter-open' },
+  { id: 'filter-applied',title: 'Ledger — Filters applied',        subtitle: 'Active-filter chips + Clear; live count + total',         which: 'txns', state: 'filter-applied' },
+  { id: 'empty-first',   title: 'Ledger — Empty (first run)',      subtitle: 'No transactions logged yet',                              which: 'txns', state: 'empty-first' },
+  { id: 'empty-nomatch', title: 'Ledger — Empty (no matches)',     subtitle: 'Filters returned nothing',                                which: 'txns', state: 'empty-nomatch' },
+
+  // ── Accounts & Categories ──────────────────────────────────
+  { id: 'accounts',      title: 'Accounts',                        subtitle: 'Four bank accounts + a credit card, with monthly flow',   which: 'accts' },
+  { id: 'categories',    title: 'Categories',                      subtitle: 'Hierarchical tree — drill in, archive, merge',            which: 'cats' },
+];
+
+// Wrap a RupiverseScreen inside the appropriate device frame, sized to fit.
+function IOSCard({ which, theme, initialType, state }) {
+  return (
+    <IOSDevice width={402} height={874} dark={THEMES[theme].frameDark}>
+      <RupiverseScreen which={which} themeKey={theme} platform="ios" initialType={initialType} state={state} />
+    </IOSDevice>
+  );
+}
+function AndroidCard({ which, theme, initialType, state }) {
+  return (
+    <AndroidDevice width={412} height={892} dark={THEMES[theme].frameDark}>
+      <RupiverseScreen which={which} themeKey={theme} platform="android" initialType={initialType} state={state} />
+    </AndroidDevice>
+  );
+}
+
+function App() {
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  // Theme leaks to the html element for the canvas background.
+  React.useEffect(() => {
+    const t = THEMES[tw.theme] || THEMES.calm;
+    document.body.style.background = t.frameDark ? '#0a0a0a' : '#efeae0';
+  }, [tw.theme]);
+
+  return (
+    <>
+      <DesignCanvas>
+        {SECTIONS.map((s) => {
+          // Desktop view defaults to the mobile screen's equivalent.
+          const desktopScreen = s.desktopScreen || s.which;
+          return (
+            <DCSection key={s.id} id={s.id} title={s.title} subtitle={s.subtitle}>
+              <DCArtboard id={`${s.id}-ios`} label="iOS" width={402} height={874}
+                style={{ background: 'transparent', boxShadow: 'none' }}>
+                <IOSCard which={s.which} theme={tw.theme} initialType={s.initialType} state={s.state} />
+              </DCArtboard>
+              <DCArtboard id={`${s.id}-android`} label="Android" width={412} height={892}
+                style={{ background: 'transparent', boxShadow: 'none' }}>
+                <AndroidCard which={s.which} theme={tw.theme} initialType={s.initialType} state={s.state} />
+              </DCArtboard>
+              <DCArtboard id={`${s.id}-desktop`} label="Desktop (PWA)" width={1280} height={820}
+                style={{ background: 'transparent', boxShadow: 'none' }}>
+                <ChromeWindow tabs={[{ title: 'Rupiverse' }]} url={`rupiverse.app/${s.id}`} width={1280} height={820}>
+                  <RupiverseDesktop t={THEMES[tw.theme]} screen={desktopScreen} state={s.state} initialType={s.initialType} />
+                </ChromeWindow>
+              </DCArtboard>
+            </DCSection>
+          );
+        })}
+      </DesignCanvas>
+
+      <TweaksPanel title="Rupiverse · Tweaks">
+        <TweakSection label="Theme">
+          <TweakRadio
+            label="Mood"
+            value={tw.theme}
+            options={[
+              { value: 'calm',     label: 'Calm'  },
+              { value: 'midnight', label: 'Night' },
+            ]}
+            onChange={(v) => setTweak('theme', v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
