@@ -19,7 +19,13 @@ const git = (...args: string[]): string => execFileSync("git", args, {cwd: REPO,
 const mergeBase = (): string => git("merge-base", BASE, "HEAD").trim();
 
 test.describe("RV1 frontend/CLAUDE.md (AC29)", () => {
+    // AC29 is a check on the RV1 frontend PR's own diff. Once that PR is squash-merged, HEAD has no commits ahead of
+    // master and there is no PR diff left to inspect, so the two diff checks are skipped there (the file-content check
+    // still runs).
+    const merged = (): boolean => mergeBase() === git("rev-parse", "HEAD").trim();
+
     test("AC29: the diff touches only lines 61, 74–75 and 79 of master's frontend/CLAUDE.md", async () => {
+        test.skip(merged(), "RV1 frontend PR already merged: no PR diff to check");
         const diff = git("diff", "--unified=0", mergeBase(), "HEAD", "--", FILE);
         expect(diff, "frontend/CLAUDE.md is not changed on this branch").not.toBe("");
         const touched: number[] = [];
@@ -49,6 +55,7 @@ test.describe("RV1 frontend/CLAUDE.md (AC29)", () => {
     });
 
     test("AC29: the change is its own docs(rv1) commit touching only frontend/CLAUDE.md", async () => {
+        test.skip(merged(), "RV1 frontend PR already merged: no PR commits to check");
         const commits = git("log", "--format=%H", `${mergeBase()}..HEAD`, "--", FILE).split("\n").filter(Boolean);
         expect(commits.length, "no commit on this branch touches frontend/CLAUDE.md").toBeGreaterThan(0);
         for (const sha of commits) {
