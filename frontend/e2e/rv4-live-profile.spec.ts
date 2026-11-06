@@ -116,6 +116,22 @@ test.describe("RV4 live profile", () => {
                 const value = window.localStorage.getItem(key) ?? "";
                 if (/^ey[\w-]+\.[\w-]+\.[\w-]+$/.test(value) || /token/i.test(key)) {
                     window.localStorage.setItem(key, "not.a.jwt");
+                    continue;
+                }
+                // The session is stored as JSON ({accessToken, refreshToken}); tamper every token field in it.
+                let parsed: unknown;
+                try {
+                    parsed = JSON.parse(value);
+                } catch {
+                    continue;
+                }
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                    const record = parsed as Record<string, unknown>;
+                    const keys = Object.keys(record).filter((k) => /token/i.test(k) && typeof record[k] === "string");
+                    if (keys.length) {
+                        keys.forEach((k) => (record[k] = "not.a.jwt"));
+                        window.localStorage.setItem(key, JSON.stringify(record));
+                    }
                 }
             }
         });
