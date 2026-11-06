@@ -169,7 +169,8 @@ def test_ac1_user_id_is_unique_and_indexed(migrated_db: str) -> None:
 def test_ac1_constraint_names_follow_the_convention(migrated_db: str) -> None:
     """§7: constraint names come from the naming convention in db/base.py (pk_/uq_/ck_/fk_<table>_…)."""
     rows = query(
-        migrated_db, "SELECT conname, contype FROM pg_constraint WHERE conrelid = 'public.user_profiles'::regclass"
+        migrated_db,
+        "SELECT conname, contype::text AS contype FROM pg_constraint WHERE conrelid = 'public.user_profiles'::regclass",
     )
     prefixes = {"p": "pk_user_profiles", "u": "uq_user_profiles_", "c": "ck_user_profiles_", "f": "fk_user_profiles_"}
     bad = [
