@@ -1,0 +1,119 @@
+# RupiVerse squad: four Claude Code agents (PM, Builder, Tester, Reviewer) and #rupiverse-hq.
+#
+# Switch Console → Templates → import this file → Use.
+# Each agent gets its own folder with a clone of your repo, its instructions (it reads
+# squad/agents/<role>.md from that clone every session), its model, and addressing that lets
+# the four talk to each other and to you. Then run squad/setup.sh (see squad/README.md).
+version: 1
+
+params:
+  repo:
+    type: string
+    description: Your fork of the RupiVerse repo (HTTPS URL). Every agent works in its own clone of it.
+    pattern: "^https://github.com/.+"
+  bridge:
+    type: bridge
+    description: Messaging app for #rupiverse-hq and every feature room (e.g. your Slack connection).
+    default: [$first]
+  provider:
+    type: provider
+    description: Coding agent behind all four. Built and tested with Claude Code.
+    default: [claude]
+    input: advanced
+  location:
+    type: location
+    description: The machine the squad runs on.
+    default: local
+    input: advanced
+  directory:
+    type: directory
+    description: Each agent's working directory (its own clone). setup.sh needs the parent folder.
+    default: "{$agents_dir}/{agent}"
+    input: advanced
+  lead_model:
+    type: string
+    description: Model for the PM and Builder
+    default: opus
+    input: advanced
+  check_model:
+    type: string
+    description: Model for the Tester and Reviewer (sonnet saves usage)
+    default: opus
+    input: advanced
+
+agents:
+  - name: pm
+    description: Product Manager. Owns ClickUp tickets and specs, guards scope, spins up a room per ticket.
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    model: "{lead_model}"
+    repo: "{repo}"
+    addressing: owner-agents
+    auto_mode: true
+    allow_existing: true
+    instructions: |
+      You are the Product Manager of the RupiVerse squad.
+      Your full instructions are in squad/agents/pm.md in your working directory (a clone of the RupiVerse repo).
+      At the start of every session: git pull, read that file, and follow it exactly. Do nothing before you have read it.
+  - name: builder
+    description: Builder. Finalises the API contract, then builds frontend and backend in parallel until the tests pass.
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    model: "{lead_model}"
+    repo: "{repo}"
+    addressing: owner-agents
+    auto_mode: true
+    allow_existing: true
+    instructions: |
+      You are the Builder of the RupiVerse squad.
+      Your full instructions are in squad/agents/builder.md in your working directory (a clone of the RupiVerse repo).
+      At the start of every session: git pull, read that file, and follow it exactly. Do nothing before you have read it.
+  - name: tester
+    description: Tester. Writes the failing tests first from the contract, then verifies every PR with pytest and Playwright.
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    model: "{check_model}"
+    repo: "{repo}"
+    addressing: owner-agents
+    auto_mode: true
+    allow_existing: true
+    instructions: |
+      You are the Tester of the RupiVerse squad.
+      Your full instructions are in squad/agents/tester.md in your working directory (a clone of the RupiVerse repo).
+      At the start of every session: git pull, read that file, and follow it exactly. Do nothing before you have read it.
+  - name: reviewer
+    description: Reviewer. Structure checks on every draft PR; full review for structure, spec, test integrity, security and migrations.
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    model: "{check_model}"
+    repo: "{repo}"
+    addressing: owner-agents
+    auto_mode: true
+    allow_existing: true
+    instructions: |
+      You are the Reviewer of the RupiVerse squad.
+      Your full instructions are in squad/agents/reviewer.md in your working directory (a clone of the RupiVerse repo).
+      At the start of every session: git pull, read that file, and follow it exactly. Do nothing before you have read it.
+
+room:
+  name: rupiverse-hq
+  description: Where the owner asks the RupiVerse squad for work. The PM turns asks into tickets and feature rooms.
+  bridge: "{bridge}"
+  channel_type: channel_private
+  agents: [pm]
+  users: ["{$creator}"]
+  instructions: |
+    This is the RupiVerse squad's headquarters. The owner ({$creator}) asks for features here.
+    @pm turns each ask into a ClickUp ticket and Spec, waits for "approved, start RV<n>", then creates the
+    feature room from the template "rupiverse-feature-room" on the messaging app "{bridge}".
+    Only the owner merges to master. "STOP" from the owner halts everyone.
+
+kickoff: |
+  @pm You're set up. git pull and read squad/agents/pm.md. Then:
+  1. Check ClickUp works: GET https://api.clickup.com/api/v2/team the way your instructions say (if it fails, tell me to finish squad/setup.sh).
+  2. Save squad/templates/feature-room.template.yaml as the template "rupiverse-feature-room" (description: "One Switch room per RupiVerse ticket, test-first squad", visibility private).
+  3. Reply with three lines: who you are, whether ClickUp and the template are ready, and how I ask you for a feature.

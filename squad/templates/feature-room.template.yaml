@@ -1,0 +1,117 @@
+# RupiVerse feature room: one Switch room per ClickUp ticket.
+#
+# The PM agent runs this template (run_template) once you approve a ticket in #rupiverse-hq.
+# It creates the room on your chat app, puts the four agents and you in it, attaches the playbook
+# as a room document, and posts a kickoff that starts the TDD loop with the Tester.
+#
+# Saved automatically by the PM on first run of squad.template.yaml (see its kickoff).
+# To save it by hand: ask @pm in #rupiverse-hq to save this file as the template "rupiverse-feature-room".
+
+params:
+  ticket_id:
+    type: string
+    description: ClickUp ticket ID, e.g. RV2
+    pattern: "^RV[0-9]+$"
+  room_name:
+    type: string
+    description: Channel name, lowercase, e.g. rv2-dashboard
+    pattern: "^rv[0-9]+-[a-z0-9-]+$"
+  title:
+    type: string
+    description: Ticket title without the ID, e.g. Dashboard
+  ticket_url:
+    type: string
+    description: ClickUp ticket URL
+  spec_url:
+    type: string
+    description: ClickUp Spec Doc URL
+  repo_url:
+    type: string
+    description: HTTPS URL of the RupiVerse repo (git remote get-url origin)
+    pattern: "^https://github.com/.+"
+  bridge:
+    type: bridge
+    description: Messaging app the room lives in (Mattermost, Slack, Discord)
+  sandbox_url:
+    type: string
+    description: Sandbox URL serving staging, if any
+    default: "none yet"
+  pm_agent:
+    type: agent
+    default: pm
+  tester_agent:
+    type: agent
+    default: tester
+  builder_agent:
+    type: agent
+    default: builder
+  reviewer_agent:
+    type: agent
+    default: reviewer
+
+room:
+  name: "{room_name}"
+  description: "{ticket_id} · {title}: test-first build by the RupiVerse agent squad"
+  bridge: "{bridge}"
+  channel_type: channel_private
+  agents: ["{pm_agent}", "{tester_agent}", "{builder_agent}", "{reviewer_agent}"]
+  users: ["{$creator}"]
+  instructions: |
+    This room builds {ticket_id} · {title}.
+    Ticket: {ticket_url}
+    Spec: {spec_url}
+    Read the room document "playbook" before acting. In short:
+    - Ticket status decides who acts: TEST DESIGN=@{builder_agent} (contract) then @{tester_agent} (tests), BUILDING=@{builder_agent},
+      TESTING=@{tester_agent}, IN REVIEW=@{reviewer_agent}, PM VERIFY=@{pm_agent}, AWAITING MERGE={$creator}.
+      Everyone else waits.
+    - Every handoff = report entry in ClickUp + a ClickUp comment linking it + one room message
+      with PR # and SHA, mentioning the next agent. Feedback goes on the PR, not in chat.
+    - Technical questions: @{builder_agent} decides. Scope questions: @{pm_agent} decides.
+    - Staging: one agent at a time ("staging: merging" / "staging: free").
+    - SANDBOX_URL: {sandbox_url}
+    - "STOP" from {$creator} halts everyone. Only {$creator} merges to master (squash and merge).
+  references:
+    - type: github
+      name: "{ticket_id} repository"
+      description: The RupiVerse monorepo (backend/ and frontend/), where this ticket's branches and PRs live
+      instructions: "Work in your own clone. Branches and PR titles follow your instructions for {ticket_id}. Read backend/CLAUDE.md and frontend/CLAUDE.md before touching code."
+      value:
+        urls: ["{repo_url}"]
+  docs:
+    - name: playbook
+      description: How the squad moves a ticket from tests to merge
+      instructions: Read before your first action in this room and whenever you are unsure whose turn it is.
+      content: |
+        # Squad playbook
+
+        ## Flow (test-driven)
+        READY → TEST DESIGN (builder finalises the API contract, then tester writes the test plan and failing tests, opens draft PRs)
+        → BUILDING (builder makes the tests pass on the same branches)
+        → TESTING (tester verifies, checks its tests were not weakened, Playwright on web)
+        → IN REVIEW (reviewer: structure, spec, test integrity, security, migrations)
+        → PM VERIFY (pm checks every acceptance criterion)
+        → AWAITING MERGE (owner squash-merges) → COMPLETE.
+
+        ## Handoff message
+        "@<next> <ticket> PR #<n> @ <sha> <what happened>. Covers AC <list>."
+        A message without PR # and SHA is ignored.
+
+        ## Caps (no infinite loops)
+        - Builder ↔ Tester: 3 bug rounds per PR. Reviewer: 2 change rounds per PR. PM: 1 clarification round.
+        - A hit cap goes to the PM, never back to the other agent. The PM's next stop is the owner (BLOCKED).
+        - The builder may dispute a bug once, with evidence; the PM rules and logs it under Decisions.
+        - Never act twice on the same SHA.
+
+        ## Tests are the contract
+        The builder may change how a test reaches the code (names, paths, fixtures).
+        Changing what a test checks needs the tester and the PM to agree in this room.
+        The reviewer rejects any loosened assertion, removed case or added skip without that agreement.
+
+        ## Who decides
+        Technical: builder. Scope and requirements: PM. Merge to master: the owner only.
+
+kickoff: |
+  {ticket_id} · {title} starts now. Ticket: {ticket_url} · Spec: {spec_url}
+  @{builder_agent} the ticket is in TEST DESIGN: finalise the API contract in the Spec first, then post "contract final" to @{tester_agent}.
+  @{tester_agent} once the contract is final, write the test plan and failing tests, open the draft PRs, and hand to @{builder_agent}.
+  @{reviewer_agent} run a structure check on every draft PR as it opens.
