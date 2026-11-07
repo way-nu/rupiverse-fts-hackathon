@@ -1,4 +1,4 @@
-# RV5 - Theme toggle
+# RV5 · Theme toggle
 
 Add an in-app light/dark theme switch to RupiVerse, so users can pick Calm (light) or Midnight (dark) instead of always following their device. Today the theme comes only from the device setting (`useScheme()` in `frontend/src/hooks/use-theme.ts`). This is frontend-only work. It needs no database, no backend and no Supabase, so anyone can build and test it on a fresh clone.
 
