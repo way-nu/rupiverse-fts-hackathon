@@ -1,0 +1,87 @@
+name: tests
+
+# Every test the squad wrote, on every push and pull request:
+# backend (unit + acceptance, against a real Postgres), frontend unit (Jest), and the Playwright suite (mock mode).
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend · pytest
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rupiverse
+          POSTGRES_PASSWORD: rupiverse
+          POSTGRES_DB: rupiverse
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rupiverse" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://rupiverse:rupiverse@localhost:5432/rupiverse_test
+      TEST_DATABASE_URL: postgresql+asyncpg://rupiverse:rupiverse@localhost:5432/rupiverse_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install
+      - run: uv sync --locked
+      - name: Create the test database
+        run: PGPASSWORD=rupiverse psql -h localhost -U rupiverse -d rupiverse -c 'CREATE DATABASE rupiverse_test'
+      - run: uv run pytest -q
+
+  frontend-unit:
+    name: frontend · jest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        env:
+          HUSKY: "0"
+      - run: npm test -- --ci
+
+  frontend-e2e:
+    name: frontend · playwright (mock)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        env:
+          HUSKY: "0"
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=mock
+        env:
+          CI: "1"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
