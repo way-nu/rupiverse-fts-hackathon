@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset --hard origin/staging)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push origin feat/:*)",
+      "Bash(git push -u origin feat/:*)",
+      "Bash(git push origin staging)",
+      "Bash(git push origin --delete staging)",
+      "Bash(git push origin origin/master:refs/heads/staging)",
+      "Bash(git worktree:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git show:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr ready:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr checkout:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr review:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh api:*)",
+      "Bash(gh label:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [
+      "Bash(gh pr merge:*)",
+      "Bash(git push origin master:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)"
+    ]
+  }
+}
