@@ -6,6 +6,8 @@
 
 > 🏁 Built for the Flip the Switch Hackathon (WeMakeDevs × DevTools Academy × Switch) · #HowISwitch
 > 🎥 **Demo video:** https://youtu.be/-g32umSaIsQ · 📝 **Blog:** https://dev.to/venusaim23/i-hired-an-engineering-team-for-my-startup-none-of-them-are-people-2be1 · 🧰 **Run it yourself:** [`squad/README.md`](squad/README.md)
+>
+> ✅ [![tests](https://github.com/way-nu/rupiverse-fts-hackathon/actions/workflows/tests.yml/badge.svg)](https://github.com/way-nu/rupiverse-fts-hackathon/actions/workflows/tests.yml) CI runs 799 of the 814 tests on every push
 
 ![The four agents in Switch Console](squad/docs/media/S7-the-four-agents.png)
 
@@ -15,6 +17,8 @@
 | --- | --- |
 | **Watch** | [Demo video](https://youtu.be/-g32umSaIsQ) (2:06): research → ticket → room → tests first → build → review → my merge |
 | **See the real work** | [5 merged PRs](https://github.com/way-nu/rupiverse-fts-hackathon/pulls?q=is%3Apr+is%3Amerged), 814 tests, and the [review that broke the login lockout](https://github.com/way-nu/rupiverse-fts-hackathon/pull/6#discussion_r4483327379) |
+| **Run the tests yourself** | [CI](https://github.com/way-nu/rupiverse-fts-hackathon/actions/workflows/tests.yml) runs the backend suite against a real Postgres (468), Jest (56) and Playwright in mock mode (275) on every push. Locally, with no Switch or ClickUp: `cd frontend && npm ci && npm test` |
+| **Built by voice** | 21,538 words dictated with Wispr Flow over 4 days, at 123 words a minute: the agent instructions, specs, prompts and this README. The demo shows a live dictation at 0:19 |
 | **Check "tests first"** | The [commit-order table](#tests-first-the-commit-history-proves-it): in every PR the tester's failing tests land before any product code |
 | **How Switch is used** | [Every Switch feature and what it does here](#how-switch-is-used): team and room templates run by an agent, rooms per ticket, room documents, addressing |
 | **How much I was needed** | 12 times on the first ticket, **once** on the second, beyond approving and merging ([details](#results)) |
@@ -169,6 +173,7 @@ Tests by type (both tickets): 290 backend acceptance and 275 Playwright mock + 1
 - **Instructions pointing at a script that didn't exist** stopped all four agents for 8 minutes, because they correctly refused to read the token file instead.
 - **Permission blocks** (marking PRs ready, merging to staging, migrating the shared DB) were each a few minutes of me adding a rule. The squad never worked around one.
 - **Web-only tests missed two native bugs**, which is now covered by a real-tap test.
+- **One race slipped through review.** Re-running the suite on the last day showed that ten parallel resends could occasionally send two codes (the AC8 test caught it about 1 run in 3). The resend check now locks the code row like the other auth paths, and CI runs it on every push.
 
 The squad needed me 12 times on the first ticket and once on the second.
 
