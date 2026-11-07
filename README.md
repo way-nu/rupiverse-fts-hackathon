@@ -5,6 +5,8 @@
 > 🏁 Flip the Switch Hackathon · Track 01: Best Business Workflow · also entered: Code with Wispr, Best Blog, #HowISwitch
 > 🎥 **Demo video:** VIDEO_LINK · 📝 **Blog:** BLOG_LINK · 🧰 **Run it yourself:** [`squad/README.md`](squad/README.md)
 
+![The four agents in Switch Console](squad/docs/media/S7-the-four-agents.png)
+
 | Two features shipped in 2 days | |
 | --- | --- |
 | Acceptance criteria | **46** |
@@ -54,6 +56,8 @@ flowchart TD
 
 Every handoff names the next agent, the PR and the commit. Every bug and finding is a comment on the exact line of the PR. ClickUp always shows whose turn it is, with a report page per agent.
 
+![The tester raises four conflicts, the builder answers, the PM rules](squad/docs/media/S2-conflicts-resolved.png)
+
 ## The squad
 
 | Agent | Owns | Never does |
@@ -97,6 +101,8 @@ The workflow does not run without Switch: the rooms, the routing, the team, and 
 | Duplicate room creation pauses for a human | Switch |
 | A permission granted "in chat" doesn't count | Agents only act on permissions configured on the machine (see moment 2 below) |
 
+![The deny list](squad/docs/media/S9-deny-list.png)
+
 ## Results
 
 | | RV1 · Auth (email + password, 6-digit email codes, JWT) | RV4 · Profile fields |
@@ -110,6 +116,8 @@ The workflow does not run without Switch: the rooms, the routing, the team, and 
 | Hands-on agent time | ≈ 4 h 15 m | ≈ 1 h 25 m |
 | Clock time, ask → merge | 24.1 h (12 h overnight waiting for my merge) | 3.96 h (2.5 h waiting for my merge) |
 | Times the squad needed me beyond planned approvals and merges | 12, mostly first-time setup (permissions, credentials, design export) | 1 (an instructions mistake of mine) |
+
+![A tester bug report on the exact line of PR #6](squad/docs/media/S5-bug-on-the-line.png)
 
 Tests by type (both tickets): 290 backend acceptance and 275 Playwright mock + 15 live (tester), 145 backend unit, 33 backend API and 56 frontend unit (builder).
 
@@ -155,5 +163,7 @@ About 30 minutes to set up, plus about an hour to watch the squad ship a real fe
 ## Built with
 
 [Switch](https://github.com/sandbox-quantum/switch) · Claude Code · ClickUp · GitHub · Slack and Mattermost · Supabase · [Wispr Flow](https://wisprflow.ai): the agent instructions, specs and this README were dictated, not typed.
+
+![RupiVerse on iPhone](squad/docs/media/S10-rupiverse-on-iphone.png)
 
 RupiVerse is a personal finance app I'm building. This squad is how it gets built.
