@@ -5,7 +5,7 @@
 **Real product, real PRs, nothing planted.** Every feature, bug and review below happened while building [RupiVerse](#repository), not a demo app.
 
 > 🏁 Built for the Flip the Switch Hackathon (WeMakeDevs × DevTools Academy × Switch) · #HowISwitch
-> 🎥 **Demo video:** VIDEO_LINK · 📝 **Blog:** BLOG_LINK · 🧰 **Run it yourself:** [`squad/README.md`](squad/README.md)
+> 🎥 **Demo video:** https://youtu.be/-g32umSaIsQ · 📝 **Blog:** https://dev.to/venusaim23/i-hired-an-engineering-team-for-my-startup-none-of-them-are-people-2be1 · 🧰 **Run it yourself:** [`squad/README.md`](squad/README.md)
 
 ![The four agents in Switch Console](squad/docs/media/S7-the-four-agents.png)
 
@@ -13,7 +13,7 @@
 
 | | |
 | --- | --- |
-| **Watch** | [Demo video](VIDEO_LINK) (2:45): research → ticket → room → tests first → build → review → my merge |
+| **Watch** | [Demo video](https://youtu.be/-g32umSaIsQ) (2:06): research → ticket → room → tests first → build → review → my merge |
 | **See the real work** | [5 merged PRs](https://github.com/way-nu/rupiverse-fts-hackathon/pulls?q=is%3Apr+is%3Amerged), 814 tests, and the [review that broke the login lockout](https://github.com/way-nu/rupiverse-fts-hackathon/pull/6#discussion_r4483327379) |
 | **Check "tests first"** | The [commit-order table](#tests-first-the-commit-history-proves-it): in every PR the tester's failing tests land before any product code |
 | **How Switch is used** | [Every Switch feature and what it does here](#how-switch-is-used): team and room templates run by an agent, rooms per ticket, room documents, addressing |
