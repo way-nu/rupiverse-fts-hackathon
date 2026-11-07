@@ -247,7 +247,7 @@ class AuthService:
         await self._repo.save(row, row.user_id)
 
     async def _seconds_until_resend(self, user_id: uuid.UUID, purpose: CodePurpose) -> int:
-        row = await self._repo.get_code(user_id, purpose)
+        row = await self._repo.get_code(user_id, purpose, lock=True)
         if row is None:
             return 0
         remaining = (row.sent_at + RESEND_INTERVAL - self._clock.now()).total_seconds()
