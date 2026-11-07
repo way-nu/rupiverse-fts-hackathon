@@ -110,10 +110,12 @@ room:
     This is the RupiVerse squad's headquarters. The owner ({$creator}) asks for features here.
     @pm turns each ask into a ClickUp ticket and Spec, waits for "approved, start RV<n>", then creates the
     feature room from the template "rupiverse-feature-room" on the messaging app "{bridge}".
+    Market research (competitors and their users' reviews) happens in #rupiverse-research.
     Only the owner merges to master. "STOP" from the owner halts everyone.
 
 kickoff: |
   @pm You're set up. git pull and read squad/agents/pm.md. Then:
   1. Check ClickUp works: GET https://api.clickup.com/api/v2/team the way your instructions say (if it fails, tell me to finish squad/setup.sh).
   2. Save squad/templates/feature-room.template.yaml as the template "rupiverse-feature-room" (description: "One Switch room per RupiVerse ticket, test-first squad", visibility private).
-  3. Reply with three lines: who you are, whether ClickUp and the template are ready, and how I ask you for a feature.
+  3. Save squad/templates/research-room.template.yaml as the template "rupiverse-research-room" and run it once, with the same bridge as this room, to open #rupiverse-research.
+  4. Reply with four lines: who you are, whether ClickUp and both templates are ready, how I ask you for a feature, and how I hand you research in #rupiverse-research.

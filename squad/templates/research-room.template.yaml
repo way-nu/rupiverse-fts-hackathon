@@ -1,0 +1,31 @@
+# RupiVerse research room: where the PM turns competitors and their users' reviews into ranked opportunities.
+#
+# The PM saves and runs this template once, from the kickoff of squad.template.yaml.
+# To run it by hand: ask @pm in #rupiverse-hq to save this file as "rupiverse-research-room" and run it.
+
+params:
+  bridge:
+    type: bridge
+    description: Messaging app the room lives in (Slack, Mattermost, Discord)
+  pm_agent:
+    type: agent
+    default: pm
+
+room:
+  name: rupiverse-research
+  description: "Competitors and their users' reviews, turned into ranked feature ideas by the PM"
+  bridge: "{bridge}"
+  channel_type: channel_private
+  agents: ["{pm_agent}"]
+  users: ["{$creator}"]
+  instructions: |
+    This is the RupiVerse research room. {$creator} drops in a competitor, a pasted review, a screenshot of one,
+    a link, or a theme. @{pm_agent} follows RESEARCH in squad/agents/pm.md:
+    - reads what real users say about competing apps (app stores, Reddit, X, review sites), with links and dates;
+    - groups it into feature requests and complaints, rates each for relevance and value to RupiVerse;
+    - writes a ClickUp Doc "Research · <topic> · <date>" and posts the top 5 here.
+    Nothing becomes a ticket until {$creator} picks it. Picked items go to BACKLOG as tickets with a Spec.
+    Every quote links to its source. No invented reviews.
+
+kickoff: |
+  @{pm_agent} #rupiverse-research is open. Reply with one line on what to send you here.
