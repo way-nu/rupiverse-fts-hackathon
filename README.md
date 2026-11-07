@@ -16,6 +16,7 @@
 | | |
 | --- | --- |
 | **Watch** | [Demo video](https://youtu.be/-g32umSaIsQ) (2:06): research → ticket → room → tests first → build → review → my merge |
+| **Try the app** | [Staging web app](https://way-nu.github.io/rupiverse-fts-hackathon/), redeployed on every push to `staging`, in mock mode (nothing leaves your browser). Log in with `demo@rupiverse.app` / `Demo@1234`; any email code is `123456` |
 | **See the real work** | [5 merged PRs](https://github.com/way-nu/rupiverse-fts-hackathon/pulls?q=is%3Apr+is%3Amerged), 814 tests, and the [review that broke the login lockout](https://github.com/way-nu/rupiverse-fts-hackathon/pull/6#discussion_r4483327379) |
 | **Run the tests yourself** | [CI](https://github.com/way-nu/rupiverse-fts-hackathon/actions/workflows/tests.yml) runs the backend suite against a real Postgres (468), Jest (56) and Playwright in mock mode (275) on every push. Locally, with no Switch or ClickUp: `cd frontend && npm ci && npm test` |
 | **Built by voice** | 21,538 words dictated with Wispr Flow over 4 days, at 123 words a minute: the agent instructions, specs, prompts and this README. The demo shows a live dictation at 0:19 |
@@ -209,6 +210,8 @@ squad/       The squad: Switch templates, agent instructions, setup.sh, permissi
 ## Run it yourself
 
 About 30 minutes to set up, plus about an hour to watch the squad ship a real feature. You need Switch Console, Docker, local Postgres, Claude Code, the GitHub CLI and a free ClickUp workspace. Full guide: **[`squad/README.md`](squad/README.md)**.
+
+On your fork, enable Actions, set **Settings → Pages → Source** to GitHub Actions and allow `staging` under **Settings → Environments → github-pages**: every pull request runs the full test suite, and every push to `staging` (the squad merges each PR there) publishes the web app to `<you>.github.io/rupiverse-fts-hackathon/`.
 
 1. Fork this repo; allow squash merging only and protect `master`.
 2. In Switch Console, connect Slack (or use the bundled Mattermost).
