@@ -1,8 +1,11 @@
 # The RupiVerse squad: four AI agents and you, in Slack, through Switch
 
-A test-first dev team that runs in team chat. You ask for a feature in `#rupiverse-hq`; a **PM** agent turns it into a ClickUp ticket and spec, then spins up a Switch room for that ticket where a **Builder**, a **Tester** and a **Reviewer** take it to a pull request that only you can merge.
+A test-first dev team that runs in team chat. In `#rupiverse-research` the **PM** agent reads what users say about competing apps and ranks what to build. In `#rupiverse-hq` you pick a feature; the PM turns it into a ClickUp ticket and spec, then opens a Switch room for that ticket where a **Builder**, a **Tester** and a **Reviewer** take it to a pull request that only you can merge. Each agent works on each ticket in its own worktree, ports and database, so several feature rooms can be open at once.
 
 ```
+you ──review / competitor──▶ #rupiverse-research ── pm: ranked opportunities doc in ClickUp
+                          │ you pick one
+                          ▼
 you (Slack) ──ask──▶ #rupiverse-hq ── pm writes ticket + spec in ClickUp
                           │
                  "approved, start RV<n>"
@@ -25,6 +28,7 @@ you (Slack) ──ask──▶ #rupiverse-hq ── pm writes ticket + spec in C
 | --- | --- |
 | `templates/squad.template.yaml` | Switch template: creates the four agents (each with its own clone of your repo, model and instructions) and `#rupiverse-hq` |
 | `templates/feature-room.template.yaml` | Switch template the PM runs per ticket: the room, its instructions, a `playbook` room document, and the kickoff |
+| `templates/research-room.template.yaml` | Switch template for `#rupiverse-research`, where the PM turns competitors' reviews into ranked feature ideas |
 | `agents/*.md` | Each agent's full instructions. The agents read them from the repo at the start of every session |
 | `setup.sh` | Everything Switch doesn't do: per-agent permissions, `.env` files, Postgres databases, the ClickUp token, GitHub labels |
 | `claude/settings.local.json.tmpl` | Claude Code permissions per clone: what agents may do, and what they may never do |
@@ -70,7 +74,7 @@ In Switch Console, stop any running squad sessions so they pick up the new permi
 ```
 @pm hello
 ```
-The PM checks ClickUp, saves the `rupiverse-feature-room` template, and tells you how to ask for work.
+The PM checks ClickUp, saves the `rupiverse-feature-room` and `rupiverse-research-room` templates, opens `#rupiverse-research`, and tells you how to ask for work.
 
 ### 7. Watch the squad build the starter ticket
 `setup.sh` created **RV5 · Theme toggle** in your ClickUp BACKLOG (from [`demo/RV5-theme-toggle.md`](demo/RV5-theme-toggle.md)). Open it in ClickUp, then in `#rupiverse-hq`:
@@ -81,8 +85,21 @@ Answer the PM's questions and approve. A room `#rv5-…` appears; watch the cont
 
 To add your own starter tickets, drop more `RV<n> · Title` files into `squad/demo/` and run `setup.sh` again.
 
+## Running on a cloud machine
+
+Everything above can run on a remote Linux host instead of your laptop: AWS EC2, Google Cloud, DigitalOcean, Azure or any VPS you can SSH into (Ubuntu 22.04/24.04; start at 2 vCPU, 4 GB RAM, 20 GB disk, and give it more if four agents will run tests at once).
+
+1. Get SSH to the machine working from your terminal, and install Docker and PostgreSQL on it.
+2. Switch Console → **Settings → Remote hosts → Add host**, pick its SSH alias, install what it reports missing, and wait for **Ready** ([Switch docs](https://docs.switchagents.ai/switch-rooms/deploy/host-remotely)). Run your Switch server there too if you want rooms to stay live with your laptop closed.
+3. On the host, sign in to Claude Code and `gh`. Switch doesn't clone onto a remote host, so clone your fork four times there (`pm/`, `builder/`, `tester/`, `reviewer/` under one folder).
+4. Use `squad.template.yaml` with **location** set to that host and **directory** pointing at those clones.
+5. Run `./squad/setup.sh --root <that folder>` on the host.
+
+You keep working in Slack. When a PR is ready, pull its branch into any IDE on your own machine, or review it on GitHub, and merge.
+
 ## Using it
 
+0. **Research (optional).** In `#rupiverse-research`, paste a review, a screenshot or a competitor's name, or ask `@pm what do users of budgeting apps keep asking for?`. The PM writes a ranked research Doc in ClickUp (every quote linked) and posts the top 5. Pick one and it becomes a BACKLOG ticket.
 1. **Ask** in `#rupiverse-hq`, e.g. `@pm users want to export their transactions as CSV`.
 2. **Answer the PM's questions.** It writes the ticket, the Spec and four report pages in ClickUp, then posts the links.
 3. **Approve**: `@pm approved, start RV<n>`. A room `#rv<n>-<slug>` appears with the squad already working.
@@ -102,6 +119,7 @@ In chat apps without autocomplete (free Slack), type agent names in full: `@pm`,
 | An agent that tries to create the same room twice pauses the whole run until you continue it | **Switch** (built into template runs) |
 | Agents can never merge, push to `master`, or force-push | **Claude Code permissions** (`settings.local.json` deny list) |
 | Agents only talk to their owner and each other | **Switch** addressing (`owner-agents`) |
+| Two feature rooms never collide | Each agent works per ticket in `.worktrees/rv<n>-<part>`, on ports `8000/9000 + 10·n + agent` and database `rupiverse_<agent>_rv<n>` |
 | "STOP" from you halts everyone; only you merge | Room instructions + permissions |
 
 ## Free-plan limits

@@ -52,11 +52,22 @@ FEATURE ROOMS (Switch)
   1. The owner asks in #rupiverse-hq. You ask your questions, write the ticket + Spec + 4 report pages, and post a short summary with both links.
   2. Wait for the owner's explicit go ("approved, start RV<n>"). Never create a room without it.
   3. Set the ticket to TEST DESIGN, then run the template once: list_templates(query="rupiverse-feature-room") → run_template(template_id, inputs={ticket_id, room_name ("rv<n>-<slug>"), title, ticket_url, spec_url, repo_url (git remote get-url origin, as https), bridge}). Use the bridge name the owner gave in #rupiverse-hq's room instructions. The kickoff starts the builder on the contract.
-  4. Post in #rupiverse-hq: "RV<n> room is up: <room>."
+  4. Post in #rupiverse-hq: "RV<n> room is up: <room>." Each agent works on the ticket in its own worktree, ports and database, so several feature rooms can be open at once.
   5. When the owner has merged: set COMPLETE and post the done note in #rupiverse-hq with the PR links and numbers (tests written first, bug rounds, review rounds, time from TEST DESIGN to merge).
-  6. Then append one row to the room document "squad-ledger" in #rupiverse-hq (create it, as yours, on the first COMPLETE): ticket · ACs · PRs · tests (tester-written first / total) · bug rounds · review rounds with changes · scope rulings · owner step-ins · ask→merge hours · hours waiting on the owner. Numbers from GitHub and ClickUp, never from memory.
+  6. Then append one row to the room document "squad-ledger" in #rupiverse-hq (create it, as yours, on the first COMPLETE): ticket · ACs · PRs · tests (tester-written first / total) · bug rounds · review rounds with changes · scope rulings · owner messages (asks, answers, approvals) · owner step-ins beyond approve and merge · ask→merge hours · hours waiting on the owner. Numbers from GitHub and ClickUp, never from memory.
 - One room per ticket, created once. If run_template is refused (busy, paused, stopped, name taken), tell the owner the exact reason and do not retry on your own.
 - To change the template, edit squad/templates/feature-room.template.yaml in the repo (through a PR), then save_template again under the same name.
+
+RESEARCH (#rupiverse-research)
+- #rupiverse-research is where the owner hands you market input: a competitor's name, a pasted review or a screenshot of one, a link, or a theme ("budgeting apps in India").
+- For each request:
+  1. Pick the competitors: the ones the owner named, plus up to 5 apps that solve the same problem for RupiVerse's users. Say which and why in one line each.
+  2. Read what their users say, with web search and fetch: Google Play and App Store reviews, Reddit, X, and review sites. Prefer recent reviews (last 12 months). Copy every quote with its link and date. Never invent or paraphrase a review into a quote; if a source can't be read, say so.
+  3. Group the reviews into feature requests and complaints (bugs, missing pieces, things users hate). For each item record: what users want, how many reviews mention it (with 2–3 links), which competitors have it and which lack it, relevance to RupiVerse (1–5), value to users (1–5), effort (S/M/L), and your recommendation (build now / later / skip) with a one-line reason.
+  4. Write a ClickUp Doc "Research · <topic> · <date>" in the "Research" folder of the RupiVerse space (create the folder if missing): a 5-line summary, the competitor table, the ranked opportunity table (relevance × value, highest first), and an evidence appendix with every quote and link.
+  5. Post in #rupiverse-research: the top 5 opportunities in one line each, plus the Doc link. Ask the owner which to take.
+- Nothing becomes a ticket until the owner picks it. For each pick, create the ticket and Spec as in TICKETS, in BACKLOG, with a link back to its row in the research Doc. Then wait for the owner's go as usual.
+- Research rulings ("skip", "later") go under the Doc's Decisions section with the date.
 
 HOUSEKEEPING
 - Stale messages: if a message refers to a SHA, ruling or status that is already superseded, reply in one line with the current state, or don't reply.
